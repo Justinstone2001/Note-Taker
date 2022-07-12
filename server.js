@@ -24,10 +24,45 @@ app.get('api/notes', (req, res) => {
 });
 
 app.get('/api/notes', (req, res) => {
-  console.info(`${req.method} get notes request recieved`);
+  console.info(`${req.method} notes request recieved`);
   res.json(notes);
 });
 
+app.post('/api/notes', (req, res) => {
+    console.info(`${req.method} add notes request recieved`);
+    const {title, text} = req.body;
+    if (title && text) {
+      const element = {
+        title,
+        text,
+        id: uuid(),
+      };
+      notes.push(element);
+      let answers = JSON.stringify((notes), null, 2);
+      fs.writeFile('./db/db.json', answers, (err) => 
+      err
+      ? console.error(err)
+          : console.log(`${element.title} has been written to the JSON file`)
+      );
+      const input = {
+        status: "success",
+        body: element,
+      };
+  
+      console.log(input);
+      res.status(201).json(input);
+    } else {
+      res.status(500).json("Error in posting note");
+    }
+  });
+  
+  app.delete('/api/notes/:id', (req, res) => {
+    const { id } = req.params;
+    const indexFinder = notes.findIndex(n => n.id == id);
+    notes.splice(indexFinder, 1);
+    return res.send();
+   });
+  
 app.listen(PORT, () =>
   console.log(`Express server listening on port http://localhost:${PORT}`)
 );
